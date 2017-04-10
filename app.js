@@ -8,7 +8,7 @@ var Robot = require('./public/javascripts/robot.js');
 var http = require('http');
 //引入cors包
 var cors = require('cors');
-
+var cheerio = require('cheerio');
 var index = require('./routes/index');
 
 var app = express();
@@ -58,6 +58,33 @@ app.get('/img',function(req,resq){
   })
 })
 
+//获取歌单数据
+app.get('/songList',function(req,resq){
+  var reqData = [];
+  var path = '/discover/playlist';
+  var p = new Promise(function(resolve,reject){
+    robot.go(path,'#m-pl-container li',resolve);
+  })
+  p.then(function(data){
+     var itemList = [];
+     var $ = cheerio.load(data);
+     data.each(function() {
+       var cap = $(this);
+       var item = {
+         src: cap.find('img.j-flag').attr('src'),
+         title: cap.find('a.msk').attr('title'),
+         id: cap.find('a.f-fr').attr('data-res-id'),
+         type: cap.find('a.f-fr').attr('data-res-type'),
+         nb: cap.find('span.nb').text(),
+         creater: cap.find('a.s-fc3').text(),
+         byhref: cap.find('a.s-fc3').attr('href')
+      };
+      itemList.push(item);
+    })
+    resq.send(itemList);
+  })
+})
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
@@ -75,7 +102,4 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
-
-
 module.exports = app;

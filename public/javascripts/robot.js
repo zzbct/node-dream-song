@@ -20,7 +20,7 @@ var Robot = function(options) {
  * @param  {[type]} resolve  [promise成功时封装数据]
  * @return {[type]}          [description]
  */
-Robot.prototype.go = function(path,selector,resolve) {
+Robot.prototype.go = function(path,selector,resolve,option) {
 	var url = this.host + path;
 	http.get(url,function(res) {
 		var htmls = '';
@@ -28,8 +28,9 @@ Robot.prototype.go = function(path,selector,resolve) {
 			htmls += data;
 		})
 		res.on('end',function() {
-			var $=cheerio.load(htmls);
-	        resolve($(selector));
+			var $ = cheerio.load(htmls);
+			var caption = $(selector);
+			resolve(caption);
 		})
 	})
 }
